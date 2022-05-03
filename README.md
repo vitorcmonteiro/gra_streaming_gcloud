@@ -18,7 +18,8 @@ https://medium.com/datareply/realtime-streaming-data-pipeline-using-google-cloud
 https://medium.com/google-cloud/twitter-analytics-part-1-801c9d494487 (Missing the streaming.py code)</br>
 https://medium.com/google-cloud/twitter-analytics-part-2-f282c49c6de7 (Dependant on part 1)</br>
 https://datatonic.com/insights/real-time-streaming-predictions-using-google-cloud-dataflow-and-google-cloud-machine-learning/</br>
-https://www.storybench.org/how-to-collect-tweets-from-the-twitter-streaming-api-using-python/</br></br>
+https://www.storybench.org/how-to-collect-tweets-from-the-twitter-streaming-api-using-python/</br>
+https://pythonprogramming.net/twitter-stream-sentiment-analysis-python/</br>
 
 Cookbook of Tweepy: https://dev.to/twitterdev/a-comprehensive-guide-for-using-the-twitter-api-v2-using-tweepy-in-python-15d9</br>
 https://docs.tweepy.org/en/stable/</br>
