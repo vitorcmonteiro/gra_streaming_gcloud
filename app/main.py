@@ -12,18 +12,17 @@ class Listener(tweepy.StreamingClient):
         sys.exit
 
 data_stream = Listener(bearer_key)
-data_stream.add_rules(tweepy.StreamRule('#nfldraft'))
-print(data_stream.get_rules())
+data_stream_rules = data_stream.get_rules()
+
+# If the stream returns any rule, remove all of them before adding new ones
+if data_stream_rules.data is not None:
+    for rule in data_stream_rules[0]:
+        data_stream.delete_rules(data_stream_rules[0][0].id)
+
+rules = ['#nfldraft', '#candyonhulu']
+
+# Add all the hashtags requested
+for rules in rule:
+    data_stream.add_rules(tweepy.StreamRule(rule))
+
 data_stream.filter()
-
-#session.add_rules(tweepy.StreamRule('nfldraft is:retweet'))
-
-# with open('out.csv', 'w', encoding='utf-8') as f:
-#     f.write('date,user,is_retweet,is_quote,text,quoted_text\n')
-
-# hashtags = {'covid', 'nfldraft'}
-
-# for hashtag in hashtags:
-#     counts = client.get_recent_tweets_count(query=f'{hashtag} -is:retweet', granularity='day')
-#     for count in counts.data:
-#         print(hashtag + ' = ' + str(count['tweet_count']))
