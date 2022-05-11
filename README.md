@@ -69,7 +69,7 @@ So we go ahead and edit ``main.py`` to be like the following code (You can refer
 ```python
 import auth, tweepy, sys
 
-bearer_key = 'AAAAAAAAAAAAAAAAAAAAADgqWQEAAAAAETWv2Lzb4gljDernmxGs2vAz1dk%3DmyNEMtDFfZxLq8HVDOXZh6M8putog8CpsZ6HADTrCkAIeKo4FR'
+bearer_key = '<insert bearer key>'
 
 class Listener(tweepy.StreamingClient):
     def on_data(self, data):
