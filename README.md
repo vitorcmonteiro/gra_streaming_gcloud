@@ -25,11 +25,11 @@ Before we go ahead with the solution itself, you must first ![create a Developer
 
 After creating your account, add an app to your account. I named mine as "analytics-gra". This action enables you to grab Consumer Keys and Authentication Tokens.
 
-[create-app]
+![Developer Dashboard](https://user-images.githubusercontent.com/22838513/167897083-d429c517-5c41-4981-82c1-6408483caf66.png)
 
 Generate a **Bearer Token** under Authentication Tokens section and safekeep that information to be used in our code.
 
-[auth-tokens]
+![Authentication tokens](https://user-images.githubusercontent.com/22838513/167897153-7998ee7c-9274-46dd-9caa-765b13dee034.png)
 
 Remember that there is a monthly limit of usage. When we connect to Twitter's API and download the data we have a running count that is capped at 2M Tweets per month. </br>
 
@@ -105,7 +105,7 @@ To determine which hashtags I usually use the trending topics just to grab the o
 
 After running this code for a few seconds you should see that you started consuming your Tweet cap and start getting responses in your console:
 
-[first-results]
+![Results](https://user-images.githubusercontent.com/22838513/167897299-da686def-1e07-4dd6-a350-b6e7010b3565.png)
 
 This means that we are receiveing response from Twitter and we are now able to work on processing the data or transforming it to a more readable format and store it somewhere.
 
