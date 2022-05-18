@@ -15,12 +15,14 @@ We will go through the setup of a local machine to receive the tweets and then w
 * VS Code
 * Python
     * Tweepy (pip install tweepy)
+    * Pandas (pip install pandas)
+    * Matplotlib (pip install matplotlib)
 
 I'm using a development evironment in WSL 2 (Ubuntu) and the only Python package we will need is called Tweepy.
 
 This is an example of the infrastructure that we are creating at Google Cloud[^3].
 
-[infrastructure]
+![Infrastructure](https://user-images.githubusercontent.com/22838513/169104325-907363f7-6626-4c75-8de2-bdf73f58fc52.png)
 
 </br></br>
 
@@ -149,15 +151,17 @@ for line in tweets_file:
 tweets = pd.DataFrame()
 tweets['text'] = list(map(lambda tweet: tweet['data']['text'], tweets_data))
 
-# For this data, I wanted to gather what rule we used to get that tweet so you need to evaluate the txt file data structure and you will see that this id comes from that structure (['matching_rules'][0]['id'])
+# For this data, I wanted to gather what rule we used to get that tweet so you need to 
+# evaluate the txt file data structure and you will see that this id comes from that structure (['matching_rules'][0]['id'])
 tweets['matching_rule_id'] = list(map(lambda tweet: tweet['matching_rules'][0]['id'], tweets_data)) 
 
 print(tweets.head())
 ```
 
-[first-results2]
+![Twitter stream results in pandas](https://user-images.githubusercontent.com/22838513/169099262-ef6eb95f-8a4a-40ea-879f-88fbc8fdcfc4.png)
 
-We didn't visualize anything at this point (Like a chart) because we will do that in Google Cloud using Bokeh. So we just showed here that we are able to read incoming data as a table in pandas. </br></br>
+
+We didn't visualize anything at this point (Like a chart) because we will do that in Google Cloud using Bokeh. So we just showed here that we are able to read incoming data as a table in Pandas. </br></br>
 
 
 # Migrating to Google Cloud
@@ -175,18 +179,18 @@ The following steps should be completed before going forward, except for the ste
 ### **Create service account**
 When creating the service account, add two different roles that you can see below:
 
-[project-owner]
+![Project owner](https://user-images.githubusercontent.com/22838513/169102045-5e56343a-bb03-415c-9c16-d72ad4015a1a.png)
 
-[pubsub-admin]
+![PubSub admin](https://user-images.githubusercontent.com/22838513/169102117-547c60ef-1779-4f18-97b8-41e95d967447.png)
 
 Now create the account and you should see something similar to the image below:
 
-[service-account-created]
+![Service account created](https://user-images.githubusercontent.com/22838513/169103716-3995a5b4-4864-4d26-942f-365bc49f4acc.png)
 
 ### **Create a service account key**
 After creating the service account, click on the account email and browse to the Keys tab. Create a new key. It will generate a JSON file and you may save it in somewhere you will remember.
 
-[create-key]
+![Creat key](https://user-images.githubusercontent.com/22838513/169103992-4d4e6f60-a538-401c-90ba-10ff36a39729.png)
 
 You can use this key locally or in the Cloud as it is your key to the services. The process is the same for both, just make sure you are in the correct terminal of the machine you want to install these keys. Since we are working with Google Cloud, we will add this key to our cloud VM below. </br></br>
 
@@ -195,19 +199,19 @@ This service is used to create Cloud Virtual Machines that will run our app (cod
 
 It will authenticate and pull tweets from Twitter using the code we create before (main.py). The first step is to enter the Compute Engine console by searching "Compute Engine" in Google Cloud's search.
 
-[compute-search]
+![Search for Compute Engine](https://user-images.githubusercontent.com/22838513/169104039-ff42326e-12d4-45dc-a015-eaa1fe422528.png)
 
-Create a new instance of the e2-micro type (Least expensive) and under Boot disk change the Boot disk type to "Standard persistent disk", this should decrease the costs of running the machine. You can see the specs below for quick reference, but I have only changed the machine type and the rest is standard.
+Create a new instance of the e2-micro type (Least expensive) and under Boot disk **change the Boot disk type to "Standard persistent disk"**, this should decrease the costs of running the machine. You can see the specs below for quick reference, but I have only changed the machine type and the rest is standard.
 
-[ec2-micro]
+![VM configuration](https://user-images.githubusercontent.com/22838513/169104096-4ce72de6-6c3a-43af-97b0-c458923f3875.png)
 
-[standard-disk]
+![Standard disk](https://user-images.githubusercontent.com/22838513/169104214-46b73b48-6d08-49aa-a47a-32da547bb93b.png)
 
 Remember to stop the machine after you are done because it is paid by the hour that it is running - unlike AWS that would account for only when used.
 
 Wait until your machine is running and you may now SSH into your recently created VM.
 
-[ssh]
+![ssh](https://user-images.githubusercontent.com/22838513/169130964-e1c424aa-6382-49d6-b7f1-6d85592b0899.png)
 
 ### **Setting up Credentials**
 Going back to our "Before we begin" section, we will now setup the credentials we have created before. These credentials could be installed in both local or Cloud settings like I mentioned before, just repeat the same steps on your Virtual Machine and you will be able to acomplish the same task within Cloud.
