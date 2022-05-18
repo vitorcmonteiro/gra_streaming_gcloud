@@ -41,6 +41,8 @@ Remember that there is a monthly limit of usage. When we connect to Twitter's AP
 ### *Connect to Twitter API*
 With the token in hands we will now connect to Twitter's API and get some tweets from the trending topics. We are able to connect it through Tweepy's class named ``StreamingClient``[^4].
 
+Remember to install tweepy package (``pip install tweepy``) in your environment.
+
 ```python
 # main.py
 import tweepy, sys
@@ -81,34 +83,10 @@ Now for the next part of the code, let's keep working on ``main.py`` file. The i
 4. List all rules (like a query) we want to stream from;
 5. Recursively add rules to the stream and run it.
 
-So we go ahead and edit ``main.py`` to be like the following code (You can refer to the ``main.py`` file in this repository):
+So we go ahead and add to ``main.py`` below the new ``Class`` we created the following code (You can refer to the ``main.py`` file in this repository):
 
 ```python
 # main.py
-import tweepy, sys
-
-bearer_key = '<insert bearer key>'
-
-# Variables used to close connection when the desired number of tweets is achieved
-tweet_count = 0
-num_tweets = 10
-
-class Listener(tweepy.StreamingClient):
-    def on_data(self, data):
-        global tweet_count
-        global num_tweets
-        global stream
-
-        if tweet_count < num_tweets:
-            print(data)
-            tweet_count += 1
-            return True
-        else:
-            stream.disconnect()
-
-    def on_error(self, status):
-        print('Encountered streaming error (', status, ')')
-        sys.exit
 
 # 1. Connect to Twitter;
 data_stream = Listener(bearer_key)
@@ -129,7 +107,6 @@ for rules in rule:
     data_stream.add_rules(tweepy.StreamRule(rule))
 
 data_stream.filter()
-
 ```
 
 To determine which hashtags I usually use the trending topics just to grab the ones with the highest throughoutput. You should also refer back to Twitter's API documentation to understand what we can do with these rules.
@@ -146,15 +123,74 @@ Now commit your changes to a GitHub repository that you can manage Access Keys s
 </br></br>
 
 ## Process streaming data (Transform)
+To read data both locally and on Google Cloud we will use ``Pandas`` so remember to install it aswell (``pip install pandas``) before proceeding.
 
+Create a file called ``analysis.py`` to read the text file we created and then show it as a table that we can transform with ``Pandas``.
 
-## Visualize streaming data
+```python
+# analysis.py
+
+import json
+import pandas as pd
+
+tweets_data_path = '<complete path to your file>'
+tweets_data = []
+tweets_file = open(tweets_data_path, 'r') # Open txt file in read-only
+
+# Consolidate each txt line into a single json
+for line in tweets_file:
+    try:
+        tweet = json.loads(line)
+        tweets_data.append(tweet)
+    except:
+        continue
+
+# Create Pandas DataFrame and map data to its columns
+tweets = pd.DataFrame()
+tweets['text'] = list(map(lambda tweet: tweet['data']['text'], tweets_data))
+
+# For this data, I wanted to gather what rule we used to get that tweet so you need to evaluate the txt file data structure and you will see that this id comes from that structure (['matching_rules'][0]['id'])
+tweets['matching_rule_id'] = list(map(lambda tweet: tweet['matching_rules'][0]['id'], tweets_data)) 
+
+print(tweets.head())
+```
+
+[first-results2]
+
+We didn't visualize anything at this point (Like a chart) because we will do that in Google Cloud using Bokeh. So we just showed here that we are able to read incoming data as a table in pandas. </br></br>
+
 
 # Migrating to Google Cloud
-We will now migrate our local solution to ![Google Cloud](https://cloud.google.com/) so please create your account before proceding.
+We will now migrate our local solution to [!Google Cloud](https://cloud.google.com/) so please create your account before proceding. Before we begin we should follow a few configuration steps. These are very similar to AWS' IAM account and access key creation.
 
-### Overview
-### Create Compute Engine (Extract)
+## **Before we begin**
+The following steps should be completed before going forward, except for the step 5 which we will go through in details[^5]:
+
+1. Create a [!Google Cloud project](https://cloud.google.com/resource-manager/docs/creating-managing-projects) </br>
+2. [!Enable the Pub/Sub Lite API](https://console.cloud.google.com/flows/enableapi?apiid=pubsublite.googleapis.com) </br>
+3. Create a service account </br>
+4. Create a service account key </br>
+5. Set environment variable GOOGLE_APPLICATION_CREDENTIALS </br></br>
+
+### **Create service account**
+When creating the service account, add two different roles that you can see below:
+
+[project-owner]
+
+[pubsub-admin]
+
+Now create the account and you should see something similar to the image below:
+
+[service-account-created]
+
+### **Create a service account key**
+After creating the service account, click on the account email and browse to the Keys tab. Create a new key. It will generate a JSON file and you may save it in somewhere you will remember.
+
+[create-key]
+
+You can use this key locally or in the Cloud as it is your key to the services. The process is the same for both, just make sure you are in the correct terminal of the machine you want to install these keys. Since we are working with Google Cloud, we will add this key to our cloud VM below. </br></br>
+
+### **Create Compute Engine (Extract)**
 This service is used to create Cloud Virtual Machines that will run our app (code) while the machine is running.  It is possible to launch them automatically but to control the costs I decided to launch it manually.
 
 It will authenticate and pull tweets from Twitter using the code we create before (main.py). The first step is to enter the Compute Engine console by searching "Compute Engine" in Google Cloud's search.
@@ -173,10 +209,35 @@ Wait until your machine is running and you may now SSH into your recently create
 
 [ssh]
 
-### Installing tools and packages
-Now with access to a VM, we will need to install pip and other tools in order to run our code successfully[^5]. Follow the steps included in that link (Installing Python section) and then install the Python package called ``Tweepy``.
+### **Setting up Credentials**
+Going back to our "Before we begin" section, we will now setup the credentials we have created before. These credentials could be installed in both local or Cloud settings like I mentioned before, just repeat the same steps on your Virtual Machine and you will be able to acomplish the same task within Cloud.
 
-```pip install tweepy```
+In your Linux Terminal create the following evironment variable with the full path for the JSON file you have downloaded from Google Cloud after creating your service account.
+
+```Console
+$ export GOOGLE_APPLICATION_CREDENTIALS="KEY_PATH"
+```
+
+Double check if the value is correct with:
+
+```Console
+$ echo $GOOGLE_APPLICATION_CREDENTIALS
+```
+
+### Installing tools and packages
+Now with access to a VM, we will need to install pip and other tools in order to run our code successfully[^6]. Follow the steps included in that link (Installing Python section) and then install the Python the following packages: ``tweepy``, ``matplotlib``, and ``pandas``.
+
+```
+$ pip install tweepy
+```
+
+```Console
+$ pip install matplotlib
+```
+
+```Console
+$ pip install pandas
+```
 
 From the console that opened we can now download our project files from GitHub, so please create one repository for you and upload your project files.
 
@@ -184,13 +245,12 @@ If the ``git`` command is not found, run this first ``sudo apt-get install git``
 
 - ``git init`` - to start a repository at that folder </br>
 - ``git pull <repository address>`` - and this should pull all the files from the repository you stored your files </br>
-(remember to create your personal access token[^6] and use it as your password)
+(remember to create your personal access token[^7] and use it as your password) </br></br>
 
+### Create Pub/Sub Lite Reservation
+Pub/Sub is a message queue app that enables asynchronous integration between aplications [^8]. It will manage the streaming data from Twitter and continuously transmit data down the stream we will create. There's also a service called Pub/Sub Lite that is specifically built for lower cost and that's the one we are using since we don't need high throughput and reliability.
 
-
-
-### Create Pub/Sub Topic (Transform)
-Pub/Sub is a message queue app that enables asynchronous integration between aplications. It will manage the streaming data from Twitter and continuously transmit data down the stream we will create. 
+In our case we will use Pub/Sub Lite Reservations since we don't require high reliability due to this being a test.
 
 ### Create Bucket (Transform)
 ### Create DataFlow (Transform)
@@ -198,15 +258,16 @@ Pub/Sub is a message queue app that enables asynchronous integration between apl
 
 
 # References
-[^1]: ![Twitter Sentiment Analysis in Real-Time](https://monkeylearn.com/blog/sentiment-analysis-of-twitter/)</br>
-[^2]: ![Generating A Twitter Ego-Network & Detecting Communities](https://towardsdatascience.com/generating-twitter-ego-networks-detecting-ego-communities-93897883d255)</br>
-[^3]: ![Realtime Streaming Data Pipeline using Google Cloud Platform and Bokeh](https://medium.com/datareply/realtime-streaming-data-pipeline-using-google-cloud-platform-and-bokeh-9dd0cfae647a)</br>
-[^4]: ![Tweepy Documentation](https://docs.tweepy.org/en/stable/)</br>
-[^5]: ![Setting up a Python development environment](https://cloud.google.com/python/docs/setup#installing_python)</br>
-[^6]: ![Creating a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token)
+[^1]: ![Twitter Sentiment Analysis in Real-Time](https://monkeylearn.com/blog/sentiment-analysis-of-twitter/) </br>
+[^2]: ![Generating A Twitter Ego-Network & Detecting Communities](https://towardsdatascience.com/generating-twitter-ego-networks-detecting-ego-communities-93897883d255) </br>
+[^3]: ![Realtime Streaming Data Pipeline using Google Cloud Platform and Bokeh](https://medium.com/datareply/realtime-streaming-data-pipeline-using-google-cloud-platform-and-bokeh-9dd0cfae647a) </br>
+[^4]: ![Tweepy Documentation](https://docs.tweepy.org/en/stable/) </br>
+[^5]: ![Before you begin](https://cloud.google.com/pubsub/lite/docs/publish-receive-messages-console#before-you-begin) </br>
+[^6]: ![Setting up a Python development environment](https://cloud.google.com/python/docs/setup#installing_python) </br>
+[^7]: ![Creating a personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token) </br>
+[^8]: ![What is Pub/Sub?](https://cloud.google.com/pubsub/docs/overview) </br>
 
 # Additional Resources
-https://medium.com/google-cloud/apache-spark-and-jupyter-notebooks-made-easy-with-dataproc-component-gateway-fa91d48d6a5a</br>
 https://medium.com/datareply/realtime-streaming-data-pipeline-using-google-cloud-platform-and-bokeh-9dd0cfae647a (Doesn't explain how to build your first pipeline from Twitter)</br>
 https://medium.com/google-cloud/twitter-analytics-part-1-801c9d494487 </br>
 https://medium.com/google-cloud/twitter-analytics-part-2-f282c49c6de7 </br>
@@ -219,3 +280,5 @@ https://developer.twitter.com/en/docs/twitter-api/data-dictionary/introduction</
 1. [!Tweepy Cookbook](https://dev.to/twitterdev/a-comprehensive-guide-for-using-the-twitter-api-v2-using-tweepy-in-python-15d9) </br>
 2. [!Stream messages from Pub/Sub by using Dataflow](https://cloud.google.com/pubsub/docs/stream-messages-dataflow) </br>
 3. [!Setting up a GCP Pub/Sub Integration with Python](http://www.theappliedarchitect.com/setting-up-gcp-pub-sub-integration-with-python/) </br>
+4. [!Apache Spark and Jupyter Notebooks made easy with Dataproc component gateway](https://medium.com/google-cloud/apache-spark-and-jupyter-notebooks-made-easy-with-dataproc-component-gateway-fa91d48d6a5a) </br>
+5. [!Publish and receive messages in Pub/Sub Lite by using the Cloud console](https://cloud.google.com/pubsub/lite/docs/publish-receive-messages-console) </br>
