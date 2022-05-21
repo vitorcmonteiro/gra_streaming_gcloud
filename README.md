@@ -247,15 +247,18 @@ In our case we will use Pub/Sub Lite Reservations since we don't require high re
 
 Navigate to [!Pub/Sub](https://console.cloud.google.com/cloudpubsub/liteReservation/) and go to ``Lite Reservations`` tab and create one:
 
-[reservation]
+![Reservation](https://user-images.githubusercontent.com/22838513/169661759-52cd75b6-4f38-4825-b15a-e57e4c757256.png)
+
 
 Now create a ``Lite Topic`` as Zonal Lite Topic, choose the Reservation we created before and minimize both peaks to 1 MiB/s:
 
-[topics]
+![Topics](https://user-images.githubusercontent.com/22838513/169661754-e20bcb57-6996-41f3-8d81-88b05ca4cc16.png)
+
 
 Finally we should create a ``Lite Subscription`` to the ``Lite Topic`` we have created before.
 
-[subscripton]
+![Subscription](https://user-images.githubusercontent.com/22838513/169661745-6d1eb183-95a7-4daa-9f64-378db1ba86a7.png)
+
 
 With these we are able to send and read data from Google Cloud as a stream.
 
