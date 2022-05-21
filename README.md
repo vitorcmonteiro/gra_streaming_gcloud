@@ -43,17 +43,21 @@ Remember that there is a monthly limit of usage. When we connect to Twitter's AP
 ### *Connect to Twitter API*
 With the token in hands we will now connect to Twitter's API and get some tweets from the trending topics. We are able to connect it through Tweepy's class named ``StreamingClient``[^4].
 
-Remember to install tweepy package (``pip install tweepy``) in your environment.
+Remember to install tweepy package (``pip install tweepy``) in your environment. I have also created a file called ``twitter`` inside a credentials folder containing only the key so I don't share it on GitHub.
 
 ```python
-# main.py
+# publish.py
 import tweepy, sys
 
-bearer_key = '<insert bearer key>'
-
-# Variables used to close connection when the desired number of tweets is achieved
+# Twitter stream limits
 tweet_count = 0
 num_tweets = 10
+
+#Credentials folder, change it to match yours.
+credentials = '/home/vitorcmonteiro/repos/gra_streaming_gcloud/credentials'
+
+# Load credentials from files
+bearer_key = open(f'{credentials}/twitter', 'r').readline()
 
 class Listener(tweepy.StreamingClient):
     def on_data(self, data):
@@ -88,7 +92,7 @@ Now for the next part of the code, let's keep working on ``main.py`` file. The i
 So we go ahead and add to ``main.py`` below the new ``Class`` we created the following code (You can refer to the ``main.py`` file in this repository):
 
 ```python
-# main.py
+# publish.py
 
 # 1. Connect to Twitter;
 data_stream = Listener(bearer_key)
@@ -213,21 +217,6 @@ Wait until your machine is running and you may now SSH into your recently create
 
 ![ssh](https://user-images.githubusercontent.com/22838513/169130964-e1c424aa-6382-49d6-b7f1-6d85592b0899.png)
 
-### **Setting up Credentials**
-Going back to our "Before we begin" section, we will now setup the credentials we have created before. These credentials could be installed in both local or Cloud settings like I mentioned before, just repeat the same steps on your Virtual Machine and you will be able to acomplish the same task within Cloud.
-
-In your Linux Terminal create the following evironment variable with the full path for the JSON file you have downloaded from Google Cloud after creating your service account.
-
-```Console
-$ export GOOGLE_APPLICATION_CREDENTIALS="KEY_PATH"
-```
-
-Double check if the value is correct with:
-
-```Console
-$ echo $GOOGLE_APPLICATION_CREDENTIALS
-```
-
 ### Installing tools and packages
 Now with access to a VM, we will need to install pip and other tools in order to run our code successfully[^6]. Follow the steps included in that link (Installing Python section) and then install the Python the following packages: ``tweepy``, ``matplotlib``, and ``pandas``.
 
@@ -251,15 +240,33 @@ If the ``git`` command is not found, run this first ``sudo apt-get install git``
 - ``git pull <repository address>`` - and this should pull all the files from the repository you stored your files </br>
 (remember to create your personal access token[^7] and use it as your password) </br></br>
 
-### Create Pub/Sub Lite Reservation
+### Create Pub/Sub Lite Service
 Pub/Sub is a message queue app that enables asynchronous integration between aplications [^8]. It will manage the streaming data from Twitter and continuously transmit data down the stream we will create. There's also a service called Pub/Sub Lite that is specifically built for lower cost and that's the one we are using since we don't need high throughput and reliability.
 
-In our case we will use Pub/Sub Lite Reservations since we don't require high reliability due to this being a test.
+In our case we will use Pub/Sub Lite Reservations since we don't require high reliability due to this being a test. In order to setup your Pub/Sub message system we will need to create a Reservation, Topic, and Subscription in this specific order.
+
+Navigate to [!Pub/Sub](https://console.cloud.google.com/cloudpubsub/liteReservation/) and go to ``Lite Reservations`` tab and create one:
+
+[reservation]
+
+Now create a ``Lite Topic`` as Zonal Lite Topic, choose the Reservation we created before and minimize both peaks to 1 MiB/s:
+
+[topics]
+
+Finally we should create a ``Lite Subscription`` to the ``Lite Topic`` we have created before.
+
+[subscripton]
+
+With these we are able to send and read data from Google Cloud as a stream.
 
 ### Create Bucket (Transform)
 ### Create DataFlow (Transform)
 ### Visualize with Bokeh
+```python
+# analysis.py
 
+
+```
 
 # References
 [^1]: ![Twitter Sentiment Analysis in Real-Time](https://monkeylearn.com/blog/sentiment-analysis-of-twitter/) </br>
@@ -272,17 +279,18 @@ In our case we will use Pub/Sub Lite Reservations since we don't require high re
 [^8]: ![What is Pub/Sub?](https://cloud.google.com/pubsub/docs/overview) </br>
 
 # Additional Resources
-https://medium.com/datareply/realtime-streaming-data-pipeline-using-google-cloud-platform-and-bokeh-9dd0cfae647a (Doesn't explain how to build your first pipeline from Twitter)</br>
-https://medium.com/google-cloud/twitter-analytics-part-1-801c9d494487 </br>
-https://medium.com/google-cloud/twitter-analytics-part-2-f282c49c6de7 </br>
-https://datatonic.com/insights/real-time-streaming-predictions-using-google-cloud-dataflow-and-google-cloud-machine-learning/</br>
-https://www.storybench.org/how-to-collect-tweets-from-the-twitter-streaming-api-using-python/</br>
-https://pythonprogramming.net/twitter-stream-sentiment-analysis-python/</br>
-https://z-ai.medium.com/downloading-data-from-twitter-using-the-streaming-api-3ac6766ba96c</br>
-https://developer.twitter.com/en/docs/twitter-api/data-dictionary/introduction</br>
 
 1. [!Tweepy Cookbook](https://dev.to/twitterdev/a-comprehensive-guide-for-using-the-twitter-api-v2-using-tweepy-in-python-15d9) </br>
 2. [!Stream messages from Pub/Sub by using Dataflow](https://cloud.google.com/pubsub/docs/stream-messages-dataflow) </br>
 3. [!Setting up a GCP Pub/Sub Integration with Python](http://www.theappliedarchitect.com/setting-up-gcp-pub-sub-integration-with-python/) </br>
 4. [!Apache Spark and Jupyter Notebooks made easy with Dataproc component gateway](https://medium.com/google-cloud/apache-spark-and-jupyter-notebooks-made-easy-with-dataproc-component-gateway-fa91d48d6a5a) </br>
 5. [!Publish and receive messages in Pub/Sub Lite by using the Cloud console](https://cloud.google.com/pubsub/lite/docs/publish-receive-messages-console) </br>
+6. [!Exploring Pub/Sub and Pub/Sub Lite](https://faun.pub/exploring-pub-sub-and-pub-sub-lite-d6379140084c) </br>
+7. [!Twitter API v2 data dictionary](https://developer.twitter.com/en/docs/twitter-api/data-dictionary/introduction) </br>
+8. [!Realtime Streaming Data Pipeline using Google Cloud Platform and Bokeh](https://medium.com/datareply/realtime-streaming-data-pipeline-using-google-cloud-platform-and-bokeh-9dd0cfae647a) </br>
+9. [!Twitter Analytics (Part 1)](https://medium.com/google-cloud/twitter-analytics-part-1-801c9d494487) </br>
+10. [!Twitter Analytics (Part 2)](https://medium.com/google-cloud/twitter-analytics-part-2-f282c49c6de7) </br>
+11. [!Real-time streaming predictions using Google’s Cloud Dataflow and Cloud Machine Learning](https://datatonic.com/insights/real-time-streaming-predictions-using-google-cloud-dataflow-and-google-cloud-machine-learning/) </br>
+12. [!How to collect tweets from the Twitter Streaming API using Python](https://www.storybench.org/how-to-collect-tweets-from-the-twitter-streaming-api-using-python/) </br>
+13. [!Streaming Tweets and Sentiment from Twitter in Python - Sentiment Analysis GUI with Dash and Python p.2](https://pythonprogramming.net/twitter-stream-sentiment-analysis-python/) </br>
+14. [!Downloading Data From Twitter Using the Streaming API](https://z-ai.medium.com/downloading-data-from-twitter-using-the-streaming-api-3ac6766ba96c) </br>
