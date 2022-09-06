@@ -6,17 +6,18 @@ from google.cloud.pubsublite.types import CloudRegion, CloudZone, MessageMetadat
 cloud_region = 'us-east1'
 zone_id = 'b'
 project_number = '920873209776'
-topic_id = 'tweets'
+topic_id = 'twitter-topic'
 
 # Twitter stream limits
 tweet_count = 0
 num_tweets = 10
+fields = ['created_at']
 
 #Credentials folder, change it to match yours.
 credentials = '/home/vitorcmonteiro/repos/gra_streaming_gcloud/credentials'
 
 # Load credentials from files
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = f'{credentials}/gra-346616-cdedbe380d9a.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = f'{credentials}/gra-346616-4dff1bef0aff.json'
 bearer_key = open(f'{credentials}/twitter', 'r').readline()
 
 location = CloudZone(CloudRegion(cloud_region), zone_id)
@@ -53,10 +54,10 @@ if data_stream_rules.data is not None:
     for rule in data_stream_rules[0]:
         data_stream.delete_rules(data_stream_rules[0][0].id)
 
-rules = ['#NationalRescueDogDay -is:retweet', '#StreamingDay -is:retweet']
+rules = ['#ArrestTrump -is:retweet']
 
 # Add all the hashtags requested
 for rule in rules:
     data_stream.add_rules(tweepy.StreamRule(rule))
 
-data_stream.filter()
+data_stream.filter(tweet_fields=fields)
